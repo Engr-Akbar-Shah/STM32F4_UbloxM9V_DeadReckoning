@@ -52,7 +52,7 @@ UART_HandleTypeDef huart2;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
@@ -330,10 +330,19 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 	HAL_StatusTypeDef status = ICM42688P_Init(&hi2c1);
-	printf("The ICM Sensor return is %d\n\r", status);
+	if(status != HAL_OK)
+		return;
   /* Infinite loop */
   for(;;)
   {
+	  icm_data_t imu;
+
+	  if (ICM42688P_ReadData(&imu) == HAL_OK)
+	  {
+	      printf("ACC: %.3f %.3f %.3f g\r\n", imu.ax, imu.ay, imu.az);
+	      printf("GYR: %.3f %.3f %.3f dps\r\n", imu.gx, imu.gy, imu.gz);
+	  }
+
     osDelay(1000);
   }
   /* USER CODE END 5 */
